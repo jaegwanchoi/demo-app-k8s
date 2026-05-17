@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: app-dev
-  labels:
-    purpose: phase1-study
-
