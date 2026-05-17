@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-code
+  namespace: note-app
+data:
+  app.py: |
+    from flask import Flask, request, jsonify
+    import json, os, time, uuid
+
+    app = Flask(__name__)
+
+    DATA_DIR  = os.environ.get("DATA_DIR", "/tmp")
+    LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+    VERSION   = os.environ.get("VERSION", "v1")
+
+    NOTES_FILE = os.path.join(DATA_DIR, "notes.json")
+    print(f"[note-api {VERSION}] DATA_DIR={DATA_DIR} LOG_LEVEL={LOG_LEVEL}", flush=True)
+
+
+    def _load():
+        try:
+            with open(NOTES_FILE) as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return []
+
+
+    def _save(notes):
+        os.makedirs(DATA_DIR, exist_ok=True)
+        with open(NOTES_FILE, "w") as f:
+            json.dump(notes, f, indent=2)
+
+
+    @app.route("/notes", methods=["GET"])
+    def list_notes():
+        notes = _load()
+        if LOG_LEVEL == "DEBUG":
+            print(f"[note-api] GET /notes count={len(notes)}", flush=True)
+        return jsonify(notes)
+
+
+    @app.route("/notes", methods=["POST"])
+    def create_note():
+        body = request.get_json(silent=True) or {}
+        note = {
+            "id": uuid.uuid4().hex[:8],
+            "text": body.get("text", ""),
+            "created": int(time.time()),
+        }
+        notes = _load()
+        notes.append(note)
+        _save(notes)
+        if LOG_LEVEL == "DEBUG":
+            print(f"[note-api] POST /notes id={note['id']}", flush=True)
+        return jsonify(note), 201
+
+
+    @app.route("/notes/<note_id>", methods=["DELETE"])
+    def delete_note(note_id):
+        notes = [n for n in _load() if n["id"] != note_id]
+        _save(notes)
+        return "", 204
+
+
+    @app.route("/health")
+    def health():
+        return jsonify({"status": "ok", "version": VERSION})
+
+
+    if __name__ == "__main__":
+        app.run(host="0.0.0.0", port=8080)

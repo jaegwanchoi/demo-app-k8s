@@ -4,7 +4,7 @@ metadata:
   name: api
   namespace: note-app
   annotations:
-    kubernetes.io/change-cause: "session3: add ConfigMap + Secret"
+    kubernetes.io/change-cause: "session3: add ConfigMap(config) + Secret"
 spec:
   replicas: 2
   selector:
@@ -17,8 +17,10 @@ spec:
     spec:
       containers:
         - name: api
-          image: note-api:v1
-          imagePullPolicy: Never
+          image: python:3-slim
+          command: ["sh", "-c"]
+          args:
+            - "pip install --quiet --no-cache-dir flask && python /app/app.py"
           ports:
             - containerPort: 8080
           envFrom:
@@ -30,3 +32,10 @@ spec:
                 secretKeyRef:
                   name: api-secret
                   key: api-key
+          volumeMounts:
+            - name: code
+              mountPath: /app
+      volumes:
+        - name: code
+          configMap:
+            name: api-code
