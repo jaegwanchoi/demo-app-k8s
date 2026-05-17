@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: app-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+        tier: backend
+    spec:
+      containers:
+        - name: api
+          image: hashicorp/http-echo:latest
+          args:
+            - "-text=api-ok"
+            - "-listen=:8080"
+          ports:
+            - containerPort: 8080
+

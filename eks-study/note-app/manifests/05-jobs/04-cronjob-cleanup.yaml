@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cleanup
+  namespace: note-app
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: cleanup
+              image: python:3-slim
+              command: ["sh", "-c"]
+              args:
+                - "pip install --quiet --no-cache-dir requests && python /script/cleanup.py"
+              env:
+                - name: API_URL
+                  value: "http://api"
+                - name: MAX_AGE_SECONDS
+                  value: "300"
+              volumeMounts:
+                - name: script
+                  mountPath: /script
+          volumes:
+            - name: script
+              configMap:
+                name: cleanup-script

@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+  namespace: app-dev
+  annotations:
+    kubernetes.io/change-cause: "session3: real Flask + ConfigMap + Secret"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+        tier: backend
+    spec:
+      containers:
+        - name: auth
+          image: python:3-slim
+          command: ["sh", "-c"]
+          args:
+            - "pip install --quiet --no-cache-dir flask pyjwt && python /app/auth.py"
+          ports:
+            - containerPort: 8080
+          env:
+            - name: LOG_LEVEL
+              value: "DEBUG"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secret
+                  key: jwt-secret
+          volumeMounts:
+            - name: code
+              mountPath: /app
+      volumes:
+        - name: code
+          configMap:
+            name: auth-code
+

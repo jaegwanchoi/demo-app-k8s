@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seed-script
+  namespace: note-app
+data:
+  seed.py: |
+    import requests, os, sys
+    API = os.environ.get("API_URL", "http://api")
+    NOTES = [
+        "K8s Pod 학습 완료",
+        "ConfigMap으로 설정 분리",
+        "PVC로 데이터 영구 저장",
+        "Job으로 초기 데이터 생성",
+    ]
+    print(f"[seed] API_URL={API}", flush=True)
+    for text in NOTES:
+        r = requests.post(f"{API}/notes", json={"text": text}, timeout=5)
+        print(f"[seed] created: {r.json()}", flush=True)
+    print("[seed] done", flush=True)

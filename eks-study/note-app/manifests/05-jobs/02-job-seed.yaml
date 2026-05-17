@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: seed
+  namespace: note-app
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: seed
+          image: python:3-slim
+          command: ["sh", "-c"]
+          args:
+            - "pip install --quiet --no-cache-dir requests && python /script/seed.py"
+          env:
+            - name: API_URL
+              value: "http://api"
+          volumeMounts:
+            - name: script
+              mountPath: /script
+      volumes:
+        - name: script
+          configMap:
+            name: seed-script

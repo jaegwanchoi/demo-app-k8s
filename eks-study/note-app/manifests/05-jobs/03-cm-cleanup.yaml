@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cleanup-script
+  namespace: note-app
+data:
+  cleanup.py: |
+    import requests, os, time
+    API = os.environ.get("API_URL", "http://api")
+    MAX_AGE = int(os.environ.get("MAX_AGE_SECONDS", "300"))
+    print(f"[cleanup] API_URL={API} MAX_AGE={MAX_AGE}s", flush=True)
+    now = int(time.time())
+    notes = requests.get(f"{API}/notes", timeout=5).json()
+    deleted = 0
+    for note in notes:
+        if now - note.get("created", now) > MAX_AGE:
+            requests.delete(f"{API}/notes/{note['id']}", timeout=5)
+            print(f"[cleanup] deleted {note['id']}: {note['text']}", flush=True)
+            deleted += 1
+    print(f"[cleanup] done. {deleted}/{len(notes)} deleted", flush=True)

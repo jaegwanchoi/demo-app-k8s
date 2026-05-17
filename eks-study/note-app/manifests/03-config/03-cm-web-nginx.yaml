@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-nginx
+  namespace: note-app
+data:
+  default.conf: |+
+    server {
+        listen 80;
+        server_name _;
+
+        location /api/ {
+            proxy_pass http://api/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+
+        location / {
+            add_header Content-Type text/plain;
+            return 200 "note-app frontend\n";
+        }
+    }
