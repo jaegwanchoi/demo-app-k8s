@@ -4,7 +4,11 @@ metadata:
   name: cleanup
   namespace: note-app
 spec:
+  # cron 표현식: 분 시 일 월 요일
+  # */1 * * * * → 매 1분마다 실행
   schedule: "*/1 * * * *"
+  # successfulJobsHistoryLimit 미지정 → 기본값 3 (최근 3개 성공 Job 보존)
+  # failedJobsHistoryLimit 미지정 → 기본값 1
   jobTemplate:
     spec:
       template:
@@ -20,7 +24,7 @@ spec:
                 - name: API_URL
                   value: "http://api"
                 - name: MAX_AGE_SECONDS
-                  value: "300"
+                  value: "300"  # 5분(300초) 이상 된 노트를 삭제
               volumeMounts:
                 - name: script
                   mountPath: /script

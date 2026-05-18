@@ -1,11 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
+  # CoreDNS가 이 이름으로 DNS 등록: api.note-app.svc.cluster.local
   name: api
   namespace: note-app
 spec:
   selector:
-    app: api
+    app: api       # 이 라벨을 가진 Pod에게만 트래픽 전달 (Endpoints 자동 생성)
   ports:
-    - port: 80
-      targetPort: 8080
+    - port: 80       # Service 가상 IP의 포트 (클라이언트 접근 포트)
+      targetPort: 8080  # 실제 Pod 포트로 전달
+  # type 미지정 → 기본값 ClusterIP: 클러스터 내부에서만 접근 가능한 가상 IP
+  # kube-proxy가 노드 iptables에 규칙을 박아 가상 IP → Pod IP로 라우팅

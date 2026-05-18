@@ -4,16 +4,17 @@ metadata:
   name: api
   namespace: note-app
   annotations:
+    # rollout history에 표시될 변경 사유 (kubectl rollout history로 확인)
     kubernetes.io/change-cause: "session2: initial deployment v1"
 spec:
-  replicas: 2
+  replicas: 2  # 유지할 Pod 수 — ReplicaSet이 이 숫자를 항상 보장
   selector:
     matchLabels:
-      app: api
-  template:
+      app: api  # 이 Deployment가 관리할 Pod의 라벨 조건
+  template:    # 이 아래가 Pod 템플릿 (Pod의 metadata + spec과 동일 구조)
     metadata:
       labels:
-        app: api
+        app: api  # selector.matchLabels와 반드시 일치해야 함
     spec:
       containers:
         - name: api

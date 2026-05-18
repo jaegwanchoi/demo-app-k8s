@@ -24,6 +24,7 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            # v1과의 유일한 차이 → Pod 템플릿 변경 감지 → 새 ReplicaSet 생성 → Rolling Update
             - name: VERSION
               value: "v2"
           volumeMounts:

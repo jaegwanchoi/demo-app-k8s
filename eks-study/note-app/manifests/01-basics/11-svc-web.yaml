@@ -4,10 +4,11 @@ metadata:
   name: web
   namespace: note-app
 spec:
-  type: NodePort
+  type: NodePort   # 노드 IP:nodePort로 클러스터 외부에서 접근 가능
   selector:
     app: web
   ports:
-    - port: 80
-      targetPort: 80
-      nodePort: 30080
+    - port: 80       # ClusterIP 포트
+      targetPort: 80  # Pod 포트
+      nodePort: 30080  # 노드에서 열리는 포트 (허용 범위: 30000~32767)
+  # Docker Desktop K8s는 NodePort 직접 접근 안 됨 → kubectl port-forward 사용

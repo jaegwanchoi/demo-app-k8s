@@ -5,7 +5,11 @@ metadata:
   namespace: note-app
 spec:
   accessModes:
+    # ReadWriteOnce: 하나의 노드에서만 읽기/쓰기 가능
+    # ReadWriteMany(RWX): 여러 노드 동시 접근 — NFS, EFS 등 별도 스토리지 필요
     - ReadWriteOnce
   resources:
     requests:
-      storage: 100Mi
+      storage: 100Mi  # StorageClass가 이 요청을 보고 PV를 자동 프로비저닝
+  # storageClassName 미지정 → 클러스터 default StorageClass 사용
+  # Docker Desktop: docker.io/hostpath StorageClass가 default

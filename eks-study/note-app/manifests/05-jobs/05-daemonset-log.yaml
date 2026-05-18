@@ -4,6 +4,8 @@ metadata:
   name: log-agent
   namespace: note-app
 spec:
+  # DaemonSet은 replicas 없음 — 클러스터의 모든 노드에 자동으로 1개씩 배포
+  # Docker Desktop: 노드 1개 → Pod 1개
   selector:
     matchLabels:
       app: log-agent
@@ -23,6 +25,7 @@ spec:
                 sleep 15
               done
           env:
+            # Downward API: Pod 자신의 메타데이터를 환경변수로 참조
             - name: NODE_NAME
               valueFrom:
                 fieldRef:
@@ -33,5 +36,7 @@ spec:
               readOnly: true
       volumes:
         - name: varlog
+          # hostPath: 노드의 실제 파일시스템을 마운트 — DaemonSet의 대표적 사용 패턴
+          # 로그 수집 에이전트(Fluentd, Filebeat 등)가 이 방식으로 노드 로그에 접근
           hostPath:
             path: /var/log

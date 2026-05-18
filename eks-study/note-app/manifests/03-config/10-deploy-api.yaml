@@ -23,15 +23,18 @@ spec:
             - "pip install --quiet --no-cache-dir flask && python /app/app.py"
           ports:
             - containerPort: 8080
+          # 패턴3 — 일괄 env var: ConfigMap 전체를 한 번에 환경변수로 주입
           envFrom:
             - configMapRef:
-                name: api-config
+                name: api-config  # DATA_DIR, LOG_LEVEL이 env var로 주입됨
           env:
+            # 패턴2 — 개별 env var: Secret 특정 키 하나만 골라 주입
             - name: API_KEY
               valueFrom:
                 secretKeyRef:
                   name: api-secret
                   key: api-key
+          # 패턴1 — 파일 마운트: ConfigMap 키=파일명, 값=파일내용으로 마운트
           volumeMounts:
             - name: code
               mountPath: /app

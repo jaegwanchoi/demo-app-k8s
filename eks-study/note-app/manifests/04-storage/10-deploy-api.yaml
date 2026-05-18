@@ -6,6 +6,7 @@ metadata:
   annotations:
     kubernetes.io/change-cause: "session4: PVC for persistent notes storage"
 spec:
+  # PVC는 ReadWriteOnce → 여러 Pod이 같은 PVC를 동시에 쓰기 불가 → replicas=1
   replicas: 1
   selector:
     matchLabels:
@@ -32,17 +33,18 @@ spec:
                 secretKeyRef:
                   name: api-secret
                   key: api-key
+            # ConfigMap의 DATA_DIR=/tmp를 /data로 덮어씀 (개별 env가 envFrom보다 우선)
             - name: DATA_DIR
               value: "/data"
           volumeMounts:
             - name: code
               mountPath: /app
             - name: data
-              mountPath: /data
+              mountPath: /data  # notes.json이 여기에 저장 → Pod 재시작해도 유지
       volumes:
         - name: code
           configMap:
             name: api-code
         - name: data
           persistentVolumeClaim:
-            claimName: api-data
+            claimName: api-data  # 01-pvc.yaml에서 정의한 PVC
