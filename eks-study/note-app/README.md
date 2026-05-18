@@ -96,22 +96,35 @@ $ kubectl get svc api -n note-app
 
 ```powershell
 $ kubectl apply -f note-app/manifests/02-deployment/
+
+# Session 1의 raw Pod 제거 (Deployment Pod과 공존 상태 해소)
+$ kubectl delete pod api web -n note-app
 ```
 
-### 확인
+### ReplicaSet 구조 확인
 
 ```powershell
-$ kubectl get deployment -n note-app
 $ kubectl get replicaset -n note-app
+# NAME             DESIRED   CURRENT   READY
+# api-xxxxxxxxxx   2         2         2    ← Deployment가 자동 생성
+# web-xxxxxxxxxx   1         1         1
+
 $ kubectl get pods -n note-app
+# Deployment가 관리하는 Pod만 남아 있어야 함
+
+$ kubectl get deployment -n note-app
+# READY: 2/2, UP-TO-DATE: 2, AVAILABLE: 2
 ```
 
 ### 스케일링
 
 ```powershell
-# api를 3개로 늘리기
+# replicas 3으로 증가
 $ kubectl scale deployment/api -n note-app --replicas=3
 $ kubectl get pods -n note-app -w
+
+# 다시 2로 감소
+$ kubectl scale deployment/api -n note-app --replicas=2
 ```
 
 ### Rolling Update (v1 → v2)
@@ -120,18 +133,28 @@ $ kubectl get pods -n note-app -w
 $ kubectl apply -f note-app/manifests/02-deployment/rollout/01-deploy-api-v2.yaml
 $ kubectl rollout status deployment/api -n note-app
 
+# ReplicaSet 확인: v1 DESIRED=0, v2 DESIRED=2
+$ kubectl get replicaset -n note-app
+
 # 새 버전 확인
 $ curl http://localhost:8080/health
 # {"status":"ok","version":"v2"}
 
 # revision 이력 확인
 $ kubectl rollout history deployment/api -n note-app
+# REVISION  CHANGE-CAUSE
+# 1         session2: initial deployment v1
+# 2         session2: rolling update v2
 ```
 
 ### Rollback
 
 ```powershell
 $ kubectl rollout undo deployment/api -n note-app
+
+# ReplicaSet 확인: v1 DESIRED=2, v2 DESIRED=0 (역전)
+$ kubectl get replicaset -n note-app
+
 $ curl http://localhost:8080/health
 # {"status":"ok","version":"v1"}
 ```
