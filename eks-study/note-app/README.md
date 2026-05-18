@@ -117,7 +117,7 @@ $ kubectl get pods -n note-app -w
 ### Rolling Update (v1 → v2)
 
 ```powershell
-$ kubectl apply -f note-app/manifests/02-deployment/01-deploy-api-v2.yaml
+$ kubectl apply -f note-app/manifests/02-deployment/rollout/01-deploy-api-v2.yaml
 $ kubectl rollout status deployment/api -n note-app
 
 # 새 버전 확인
